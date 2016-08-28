@@ -55,7 +55,7 @@ Value to be added to the list is a unique identifier that is printed in the scre
 *Result of adding a torrent to the queue*
 
 
-### Bibliograpy
+### Bibliography
 https://help.ubuntu.com/community/TransmissionHowTo#Installation
 https://xpressrazor.wordpress.com/2014/04/30/using-transmission-remote-as-your-default-bittorrent-client/
 https://wiki.archlinux.org/index.php/Transmission
