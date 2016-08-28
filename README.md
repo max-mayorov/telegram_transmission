@@ -54,6 +54,24 @@ Value to be added to the list is a unique identifier that is printed in the scre
 
 *Result of adding a torrent to the queue*
 
+### Pre-requisites
+
+Install the API library for python:
+```
+pip install python-telegram-bot --upgrade
+```
+[More information](https://github.com/python-telegram-bot/python-telegram-bot)
+
+### Add to the startup commands list
+
+Add an entry to the rc.local file:
+```
+sudo -s
+echo "${PATH_TO_SCRIPT}" >> /etc/rc.local
+```
+
+This will make the script to be always running in you computer in background, do not forget to reboot the machine.
+
 
 ### Bibliography
 https://help.ubuntu.com/community/TransmissionHowTo#Installation
