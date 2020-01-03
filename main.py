@@ -27,6 +27,7 @@ TOKEN, TRANSMISSION_USER, TRANSMISSION_PASSWORD, users, DEFAULT_DOWNLOAD_PATH, D
 AUTHORIZED_USERS = map(int, users.split(','))
 
 telegram_bot = telepot.Bot(TOKEN)
+TRANSMISSION_REMOTE_BASE = "transmission-remote -n '" + TRANSMISSION_USER + ":" + TRANSMISSION_PASSWORD + "' "
 
 def execute_command(cmd, returns=False):
     result = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -40,14 +41,40 @@ def execute_command(cmd, returns=False):
         print(output)
         raise IOError
 
-
 def cmd_add_torrent(magnet=None, location=DEFAULT_DOWNLOAD_FOLDER):
     download_dir = DEFAULT_DOWNLOAD_PATH + location
-    cmd = "transmission-remote -n '" + TRANSMISSION_USER + ":" + TRANSMISSION_PASSWORD + "' --add '" + magnet + "'"
+    cmd = TRANSMISSION_REMOTE_BASE + " --add '" + magnet + "'"
     if location != DEFAULT_DOWNLOAD_FOLDER:
         cmd = cmd + ' --download-dir ' + download_dir
-    execute_command(cmd)
+    return execute_command(cmd)
 
+def cmd_list_torrents():
+    cmd = TRANSMISSION_REMOTE_BASE + " --list"
+    return execute_command(cmd)    
+
+def cmd_ipsec(arg):
+    if(arg not in ["start","stop","restart","status"]):
+        return "Incorrect verb"
+    cmd = "ipsec " + arg
+    return execute_command(cmd)
+
+def handle_add(args):
+    if(len(args) == 1):
+        return cmd_add_torrent(magnet=args[0])
+    if(len(args) == 2):
+        return cmd_add_torrent(args[0], args[1])
+    return 'Incorrect number of arguments, use: /add <magnet> [folder]'
+
+def handle_list(args):
+    return cmd_list_torrents()
+
+def handle_vpn(args):
+    if(len(args) == 1):
+        return cmd_ipsec(args[0])
+    return 'Incorrect number of arguments, use: /vpn <status|start|restart|stop>'
+
+def handle_unknown(args):
+    return 'Unknown command'
 
 def action(msg):
     user_id = msg['from']['id']
@@ -58,19 +85,11 @@ def action(msg):
     
     try:
         command = msg['text'].split(' ')
-        reply = ''
-        if(len(command) > 0):
-            if(command[0] == '/add'):
-                if(len(command) == 2):
-                    reply = cmd_add_torrent(magnet=command[1])
-                elif(len(command) == 3):
-                    reply = cmd_add_torrent(command[1], command[2])
-                else:
-                    reply = 'Incorrect number of arguments, use: /add <magnet> [folder]'
-            else:
-                reply = 'Unknown command'
-        else:
-            reply = "Where's a command?"
+        reply = {
+                '/add': handle_add,
+                '/list': handle_list,
+                '/vpn': handle_vpn,
+            }.get(command[0], handle_unknown)(command[1:]) if (len(command) > 0) else "Where's a command?"
     except Exception as e:
         reply = 'Ups, error: ' + str(e)
 
