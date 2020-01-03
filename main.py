@@ -73,6 +73,21 @@ def handle_vpn(args):
         return cmd_ipsec(args[0])
     return 'Incorrect number of arguments, use: /vpn <status|start|restart|stop>'
 
+def handle_dns(args):
+    cmd = """
+if grep -q 8\.8\.[4|8].[4|8] /etc/resolv.conf; then
+    echo Already there
+else
+    echo Adding
+cat <<EOF | tee /etc/resolv.conf --append
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+EOF
+
+fi
+    """
+    return execute_command(cmd)
+
 def handle_unknown(args):
     return 'Unknown command'
 
@@ -89,6 +104,7 @@ def action(msg):
                 '/add': handle_add,
                 '/list': handle_list,
                 '/vpn': handle_vpn,
+                '/dns': handle_dns,
             }.get(command[0], handle_unknown)(command[1:]) if (len(command) > 0) else "Where's a command?"
     except Exception as e:
         reply = 'Ups, error: ' + str(e)
