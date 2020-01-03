@@ -11,8 +11,16 @@ The torrent gets added by simply writting:
 The code asumes that transmission-daemon is already installed in your machine.
 More information and a simple installation tutorial can be found here: https://github.com/Viperey/local-server-tutorial#transmission
 
-
 ### Parameters
+Parameters are retrieved from configuration file main.config. Every parameter should be on it's own line in the following order:
+```
+TOKEN
+TRANSMISSION_USER
+TRANSMISSION_PASSWORD
+AUTHORIZED_USERS (comma separated list)
+DEFAULT_DOWNLOAD_PATH
+DEFAULT_DOWNLOAD_FOLDER
+```
 
 #### TOKEN
 
@@ -58,9 +66,9 @@ Value to be added to the list is a unique identifier that is printed in the scre
 
 Install the API library for python:
 ```
-pip install python-telegram-bot --upgrade
+pip install telepot
 ```
-[More information](https://github.com/python-telegram-bot/python-telegram-bot)
+[More information](https://telepot.readthedocs.io/en/latest/)
 
 ### Add to the startup commands list
 
