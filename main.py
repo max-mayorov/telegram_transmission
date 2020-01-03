@@ -12,7 +12,7 @@ import time
 import telepot
 from telepot.loop import MessageLoop
 
-# Config file in the following format:
+# Config file in the following format (one value per line):
 # TOKEN
 # TRANSMISSION_USER
 # TRANSMISSION_PASSWORD
@@ -27,7 +27,7 @@ TOKEN, TRANSMISSION_USER, TRANSMISSION_PASSWORD, users, DEFAULT_DOWNLOAD_PATH, D
 AUTHORIZED_USERS = map(int, users.split(','))
 
 telegram_bot = telepot.Bot(TOKEN)
-TRANSMISSION_REMOTE_BASE = "transmission-remote -n '" + TRANSMISSION_USER + ":" + TRANSMISSION_PASSWORD + "' "
+TRANSMISSION_REMOTE_BASE = "transmission-remote -n '%s:%s' " % (TRANSMISSION_USER, TRANSMISSION_PASSWORD)
 
 def execute_command(cmd, returns=False):
     result = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -42,14 +42,14 @@ def execute_command(cmd, returns=False):
         raise IOError
 
 def cmd_add_torrent(magnet=None, location=DEFAULT_DOWNLOAD_FOLDER):
-    download_dir = DEFAULT_DOWNLOAD_PATH + location
-    cmd = TRANSMISSION_REMOTE_BASE + " --add '" + magnet + "'"
+    cmd = "%s --add '%s'" % (TRANSMISSION_REMOTE_BASE, magnet)
     if location != DEFAULT_DOWNLOAD_FOLDER:
-        cmd = cmd + ' --download-dir ' + download_dir
+        download_dir = DEFAULT_DOWNLOAD_PATH + location
+        cmd = "%s --download-dir %s" % (cmd, download_dir)
     return execute_command(cmd)
 
 def cmd_list_torrents():
-    cmd = TRANSMISSION_REMOTE_BASE + " --list"
+    cmd = "%s --list" % (TRANSMISSION_REMOTE_BASE)
     return execute_command(cmd)    
 
 def cmd_ipsec(arg):
