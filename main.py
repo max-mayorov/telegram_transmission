@@ -19,7 +19,7 @@ from telepot.loop import MessageLoop
 # AUTHORIZED_USERS (comma separated list)
 # DEFAULT_DOWNLOAD_PATH
 # DEFAULT_DOWNLOAD_FOLDER
-SETTINGS_FILENAME = 'main.config'
+SETTINGS_FILENAME = '/home/osmc/main.config'
 
 telegram_bot = None 
 
@@ -56,8 +56,6 @@ def cmd_ipsec(arg):
         return "Incorrect verb"       
     cmd = "ipsec " + arg
     result = execute_command(cmd)
-    if(arg in ["start", "restart"]):
-        handle_dns()
     return result
 
 def handle_add(args):
@@ -105,21 +103,6 @@ def handle_vpn(args):
         return cmd_ipsec(args[0])
     return 'Incorrect number of arguments, use: /vpn <status|start|restart|stop>'
 
-def handle_dns(args):
-    cmd = """
-if grep -q 8\\.8\\.[48].[48] /etc/resolv.conf; then
-    echo Already there
-else
-    echo Adding
-cat <<EOF | tee /etc/resolv.conf --append
-nameserver 8.8.8.8
-nameserver 8.8.4.4
-EOF
-
-fi
-    """
-    return execute_command(cmd)
-
 def handle_unknown(args):
     return 'Unknown command'
 
@@ -139,8 +122,7 @@ def action(msg):
                 '/speed_limit': handle_speed_limit,
                 '/stop': handle_stop,
                 '/list': handle_list,
-                '/vpn': handle_vpn,
-                '/dns': handle_dns,
+                '/vpn': handle_vpn
             }.get(command[0], handle_unknown)(command[1:]) if (len(command) > 0) else "Where's a command?"
     except Exception as e:
         reply = 'Ups, error: ' + str(e)
@@ -149,7 +131,6 @@ def action(msg):
 
 def main():
     global telegram_bot
-    handle_dns([])
     telegram_bot = telepot.Bot(TOKEN)
     MessageLoop(telegram_bot, action).run_as_thread()
     while(1):
@@ -160,5 +141,5 @@ if __name__ == '__main__':
     pidfile='/tmp/%s' % myname       # any name
     daemon = Daemonize(app=myname,pid=pidfile, action=main)
     daemon.stdout = '/home/osmc/main.stdout.txt' # MUST BE ABSOLUTE PATH
-    daemon.stderr = '/home/osmc/main.stderr .txt'
+    daemon.stderr = '/home/osmc/main.stderr.txt'
     daemon.start()
