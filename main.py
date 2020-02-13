@@ -11,6 +11,7 @@ import time
 
 import telepot
 from telepot.loop import MessageLoop
+from telepot.namedtuple import ReplyKeyboardMarkup, ReplyKeyboardRemove, KeyboardButton
 
 # Config file in the following format (one value per line):
 # TOKEN
@@ -58,6 +59,15 @@ def cmd_ipsec(arg):
     result = execute_command(cmd)
     return result
 
+def add_keyboard(text, options):
+    return {
+        'text': text,
+        'keyboard': ReplyKeyboardMarkup(
+            keyboard = map(lambda x: KeyboardButton(text = x), options),
+            one_time_keyboard = True
+        )
+    }
+
 def handle_add(args):
     if(len(args) == 1):
         return cmd_add_torrent(magnet=args[0])
@@ -76,7 +86,7 @@ def handle_speed_limit(args):
         return 'Incorrect number of arguments, use: /speed_limit <on|off>'
     cmd = args[0]
     if(cmd not in ["on", "off"]):
-        return 'Wrong argument, use: /speed_limit <on|off>'
+        return add_keyboard('Wrong argument, use: /speed_limit <on|off>', ['/speed_limit on', '/speed_limit off'])
     command = {
         "on": "-as",
         "off": "-AS"
@@ -101,10 +111,17 @@ def handle_list(args):
 def handle_vpn(args):
     if(len(args) == 1):
         return cmd_ipsec(args[0])
-    return 'Incorrect number of arguments, use: /vpn <status|start|restart|stop>'
+    
+    return add_keyboard('Incorrect number of arguments, use: /vpn <status|start|restart|stop>', ['/vpn status', '/vpn start', '/vpn restart', '/vpn stop'])
 
 def handle_unknown(args):
     return 'Unknown command'
+
+def send_reply(reply, chat_id):
+    txt = reply if isinstance(reply,str) else reply['text']
+    markup = None if isinstance(reply,str) else reply['keyboard']
+    markup = ReplyKeyboardRemove() if markup == None else markup
+    telegram_bot.sendMessage(chat_id, txt, reply_markup = markup)
 
 def action(msg):
     user_id = msg['from']['id']
@@ -127,7 +144,7 @@ def action(msg):
     except Exception as e:
         reply = 'Ups, error: ' + str(e)
     reply = "<empty>" if not reply else reply 
-    telegram_bot.sendMessage(chat_id, reply)
+    send_reply(reply, chat_id)
 
 def main():
     global telegram_bot
