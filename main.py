@@ -27,7 +27,7 @@ telegram_bot = None
 with open(SETTINGS_FILENAME) as f:
   lineList = f.read().splitlines()
 TOKEN, TRANSMISSION_USER, TRANSMISSION_PASSWORD, users, DEFAULT_DOWNLOAD_PATH, DEFAULT_DOWNLOAD_FOLDER = lineList
-AUTHORIZED_USERS = map(int, users.split(','))
+AUTHORIZED_USERS = list(map(int, users.split(',')))
 
 TRANSMISSION_REMOTE_BASE = "transmission-remote -n '%s:%s' " % (TRANSMISSION_USER, TRANSMISSION_PASSWORD)
 
@@ -63,7 +63,8 @@ def add_keyboard(text, options):
     return {
         'text': text,
         'keyboard': ReplyKeyboardMarkup(
-            keyboard = map(lambda x: KeyboardButton(text = x), options),
+            keyboard = [list(map(lambda x: KeyboardButton(text = x), options))],
+            resize_keyboard = True,
             one_time_keyboard = True
         )
     }
@@ -82,11 +83,12 @@ def handle_start(args):
     return cmd_manage_torrent("--start", torrents)
 
 def handle_speed_limit(args):
+    keyboard_options =  ['/speed_limit on', '/speed_limit off']
     if(len(args) != 1):
-        return 'Incorrect number of arguments, use: /speed_limit <on|off>'
+        return add_keyboard('Incorrect number of arguments, use: /speed_limit <on|off>', keyboard_options)
     cmd = args[0]
     if(cmd not in ["on", "off"]):
-        return add_keyboard('Wrong argument, use: /speed_limit <on|off>', ['/speed_limit on', '/speed_limit off'])
+        return add_keyboard('Wrong argument, use: /speed_limit <on|off>', keyboard_options)
     command = {
         "on": "-as",
         "off": "-AS"
